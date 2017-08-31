@@ -32,19 +32,19 @@ def do_backup(vm):
 def main():
     # Get absolute path to all vm files in the given working directory
     existing_vm = glob.glob(os.path.join(WORKING_DIR, WILDCARD))
-    existing_vm = map(os.path.abspath, existing_vm)
+    existing_vm = set(map(os.path.abspath, existing_vm))
     logger.info('{} VMs found in {}'.format(len(existing_vm), WORKING_DIR))
 
     if os.path.exists(CHECKPOINT_FILE):
         with open(CHECKPOINT_FILE, 'r') as f:
             backed_up = f.readlines()
-            backed_up = [vm.strip() for vm in backed_up]
+            backed_up = set([vm.strip() for vm in backed_up])
 
         logger.info('Checkpoint file found. {}/{} VMs were backed up.'
                     ' Continuing...'.format(len(backed_up), len(existing_vm)))
     else:
         logger.info('Checkpoint file not found. Starting from the beginning')
-        backed_up = []
+        backed_up = set([])
     
     start_time = time.time()
     timed_out = False
@@ -57,7 +57,7 @@ def main():
                 break
             if vm not in backed_up:
                 do_backup(vm)
-                backed_up.append(vm)
+                backed_up.add(vm)
                 backed_up_this_run += 1
                 f.write(vm + '\n')
 
