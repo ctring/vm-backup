@@ -104,8 +104,6 @@ def main(targets, time_limit_s, checkpoint_file, start_over):
         logger.info('Time limit reached')
     else:
         logger.info('Finished backing up all VMs')
-        os.remove(checkpoint_file)
-
 
     logger.info('Backed up VMs in this run: %d', backed_up_this_run)
     logger.info('Backed up VMs in total: %d/%d', len(backed_up), len(all_vm))
