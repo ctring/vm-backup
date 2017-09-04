@@ -1,3 +1,22 @@
+'''WPI VMs backing up script
+
+This script backs up VMs in a specified time limit and picks up where it left
+off in the next run. It should be scheduled as a cron job to automatically
+perform backing up in fixed time frames.
+
+Example usage:
+    ./python backup.py test1/*.qcow2 test2/*.vdi 7200
+        This command performs backing up all qcow2 files in test1 and vdi files
+        in test2 and stops when all files are backed up or 2 hours elapse,
+        whichever comes first. 
+
+Help:
+    ./python backup.py -h
+
+Author:
+    Cuong Nguyen (ctnguyendinh@wpi.edu)
+
+'''
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
@@ -107,7 +126,7 @@ def main(targets, time_limit_s, checkpoint_file, start_over):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='This script backs up VMs in a specified time limit. '
-                    'It picks up from where it left off in last run.')
+                    'It picks up from where it left off in the next run.')
     parser.add_argument('targets', nargs='+',
                         help='one or more targets to be backed up. Unix-style '
                              'pattern matching is available')
