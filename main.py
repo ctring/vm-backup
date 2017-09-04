@@ -8,12 +8,7 @@ import glob
 import logging
 import argparse
 
-WORKING_DIR = os.path.abspath('test')
-WILDCARD = '*'
-CHECKPOINT_FILE = os.path.abspath('backup.chkpnt')
-TIME_LIMIT_S = 3
-
-# Configuring logging object
+# Configure logging object
 logger = logging.getLogger('vm-backup')
 logger.setLevel(logging.INFO)
 sh = logging.StreamHandler()
