@@ -44,7 +44,7 @@ def get_block_devs(vm_name):
     for sect in results:
         if sect.endswith('qcow2'):
             devs.append(sect.split()[0])
-            print('Found block device {}'.format(sect))
+            print('Found block device {0}'.format(sect))
     return devs
 
 def save_vm_state(vm_name, backup_dir=BACKUP_DIR):
@@ -61,14 +61,14 @@ def save_vm_state(vm_name, backup_dir=BACKUP_DIR):
     save_prc = subprocess.Popen(save_cmd)
     save_prc.communicate()
 
-    print('Backup of vm {} state successful'.format(vm_name))
+    print('Backup of vm {0} state successful'.format(vm_name))
 
 def dump_vm_info(vm_name, backup_dir=BACKUP_DIR):
     """
     Saves the VM configuration XML files.
     """
-    dump_name = os.path.join(backup_dir, '{}.xml'.format(vm_name))
-    print('Dumping config for {} to {}'.format(vm_name, dump_name))
+    dump_name = os.path.join(backup_dir, '{one}.xml'.format(one=vm_name))
+    print('Dumping config for {one} to {two}'.format(one=vm_name, two=dump_name))
     save_cmd = ['virsh',
                 'dumpxml',
                 '--security-info',
@@ -81,21 +81,21 @@ def dump_vm_info(vm_name, backup_dir=BACKUP_DIR):
 
 def undefine_vm(vm_name):
     """Makes the VM transient"""
-    print('Destroying VM definitiion for VM {}'.format(vm_name))
+    print('Destroying VM definitiion for VM {one}'.format(one=vm_name))
     cmd = ['virsh', 'undefine', vm_name]
     prc = subprocess.Popen(cmd)
     prc.communicate()
 
 def suspend_vm(vm_name):
     """Suspends the VM"""
-    print('Suspending VM {}'.format(vm_name))
+    print('Suspending VM {0}'.format(vm_name))
     cmd = ['virsh', 'suspend', vm_name]
     prc = subprocess.Popen(cmd)
     prc.communicate()
 
 def restore_vm_state(vm_name, backup_dir=BACKUP_DIR):
     """Restores the VM. Necessary because save-state will stop the VM."""
-    print('Restoring VM {}'.format(vm_name))
+    print('Restoring VM {one}'.format(one=vm_name))
     cmd = ['virsh',
            'restore',
            (os.path.join(backup_dir, vm_name+'-memory')),
@@ -106,7 +106,7 @@ def restore_vm_state(vm_name, backup_dir=BACKUP_DIR):
 
 def restore_vm_def(vm_name, backup_dir=BACKUP_DIR):
     """Restores the VM XML Configuration and defninition.."""
-    print('Restoring VM definition for VM {}'.format(vm_name))
+    print('Restoring VM definition for VM {0}'.format(vm_name))
     cmd = ['virsh',
            'define',
            (os.path.join(backup_dir, vm_name+'.xml'))
@@ -121,11 +121,11 @@ def safe_exit(vm_name):
 def copy_block(vm_name, disk_name, backup_dir=BACKUP_DIR):
     """Copies the block device into backup."""
     backup_name = os.path.join(backup_dir,
-                               '{}-{}-backup.qcow2'.format(vm_name,
+                               '{0}-{1}-backup.qcow2'.format(vm_name,
                                                            disk_name
                                                           )
                               )
-    print('Copying disk {}, for vm {} into file {}...'.format(disk_name,
+    print('Copying disk {0}, for vm {1} into file {2}...'.format(disk_name,
                                                                     vm_name,
                                                                     backup_name
                                                                    )
@@ -145,12 +145,12 @@ def copy_block(vm_name, disk_name, backup_dir=BACKUP_DIR):
             return
         else:
             progress = int(progress_report.split('[')[1].split()[0])
-            print('Copying... {} %'.format(progress))
+            print('Copying... {0} %'.format(progress))
         time.sleep(5)
 
 def get_backup_name(vm_name, bk_id, backup_dir=BACKUP_DIR):
     """Composes the backup name."""
-    return os.path.join(BACKUP_DIR, vm_name, 'backup-{}'.format(bk_id))
+    return os.path.join(BACKUP_DIR, vm_name, 'backup-{0}'.format(bk_id))
 
 def get_last_backup_name(vm_name):
     """Returns the backup name for the final backup index"""
@@ -167,7 +167,7 @@ def rotate_backups(vm_name):
         bk_prev = get_backup_name(vm_name, prev)
         bk = get_backup_name(vm_name, bkcnt)
         if os.path.isdir(bk_prev) and os.path.isdir(bk):
-            print('Remove old backup %s', bk_prev)
+            print('Remove old backup {0}'.format(bk_prev))
             cmd = ['mv',
                    bk_prev,
                    os.path.join(BACKUP_DIR, vm_name, 'to-be-removed')]
@@ -189,7 +189,7 @@ def rotate_backups(vm_name):
                 print('Cannot remove old backup directory. Not a backup.')
                 exit(1)
         if os.path.isdir(bk):
-            print('Rename %s to %s', bk, bk_prev)
+            print('Rename {0} to {1}'.format( bk, bk_prev))
             cmd = ['mv', bk, bk_prev]
             cmd_prc = subprocess.Popen(cmd)
             cmd_prc.communicate()
@@ -216,16 +216,16 @@ def check_disk_space(vm_name):
         blk_space_prc = subprocess.Popen(blk_space_cmd, stdout=subprocess.PIPE)
         blk_space_out, _ = blk_space_prc.communicate()
         req_space = int(blk_space_out.split()[-1]) / 1024 # In KiBytes
-        print('Device {} requires {} KiB'.format(d, req_space))
+        print('Device {0} requires {1} KiB'.format(d, req_space))
         vm_req_space += req_space
 
     mem_size_cmd = ['virsh', 'dominfo', vm_name]
     mem_size_prc = subprocess.Popen(mem_size_cmd, stdout=subprocess.PIPE)
     mem_size_out, _ = mem_size_prc.communicate()
     mem = int(mem_size_out.split('\n')[7].split()[2])
-    print('VM memory size is {} KiB'.format(mem))
+    print('VM memory size is {0} KiB'.format(mem))
     mem = int(mem*1.2)
-    print('VM memory requirement scaled to {} KiB'.format(mem))
+    print('VM memory requirement scaled to {0} KiB'.format(mem))
     vm_req_space += mem
 
     last_backup_cmd = ['du', '-s', get_last_backup_name(vm_name)]
@@ -239,11 +239,11 @@ def check_disk_space(vm_name):
     mb_required = vm_req_space / 1024
 
     if mb_free < mb_required:
-        print('Cannot make backup; only {} MiB available.'.format(mb_free) +
-                    ' Minimum needed is {} MiB.'.format(mb_required))
+        print('Cannot make backup; only {0} MiB available.'.format(mb_free) +
+                    ' Minimum needed is {0} MiB.'.format(mb_required))
         return 1
     print(
-        'Backup possible: {} MiB expected to remain after backup'.format(
+        'Backup possible: {0} MiB expected to remain after backup'.format(
             mb_free-mb_required))
     return 0
 
@@ -254,7 +254,7 @@ def backup_vm(vm_name):
     subprocess.Popen(['chown', '-R', 'root:kvm', BACKUP_DIR])
 
     # Starting Backup
-    print('Backup of %s started', vm_name)
+    print('Backup of {0} started'.format(vm_name))
     blocks = get_block_devs(vm_name)
     result = check_disk_space(vm_name)
     if result:
@@ -271,7 +271,7 @@ def backup_vm(vm_name):
     restore_vm_state(vm_name, backup_dir)
     restore_vm_def(vm_name, backup_dir)
 
-    print("Backup of %s finished", vm_name)
+    print("Backup of {0} finished".format(vm_name))
 
 def do_backup(vm_name):
     """Runs backup code from ported script (original: https://goo.gl/SVCiq9)"""
@@ -302,7 +302,7 @@ def get_existing_vms(allow_inactive=False):
 def main():
     # Get absolute path to all vm files in the given working directory
     existing_vm = get_existing_vms()
-    print('{} VMs found.'.format(len(existing_vm)))
+    print('{0} VMs found.'.format(len(existing_vm)))
 
     # all_vm contains existing VMs and possibly removed backed up VMs
     all_vm = set(existing_vm)
@@ -320,12 +320,12 @@ def main():
         
         if len(backed_up) < len(all_vm):
             if len(removed_vm) > 0:
-                print('Checkpoint file found. {}/{} VMs were backed up.'
-                            ' {} VMs were removed since last backup session.'
+                print('Checkpoint file found. {0}/{1} VMs were backed up.'
+                            ' {2} VMs were removed since last backup session.'
                             ' Continuing...'
                             .format(len(backed_up), len(all_vm), len(removed_vm)))
             else:
-                print('Checkpoint file found. {}/{} VMs were backed up.'
+                print('Checkpoint file found. {0}/{1} VMs were backed up.'
                             ' Continuing...'.format(len(backed_up), len(all_vm)))
         else:
             print('Checkpoint file found. All VMs were backed up.'
@@ -357,11 +357,11 @@ def main():
     else:
         print('Finished backing up all VMs')
         os.remove(CHECKPOINT_FILE)
-        print('Removed checkpoint file {}'.format(CHECKPOINT_FILE))
+        print('Removed checkpoint file {0}'.format(CHECKPOINT_FILE))
 
-    print('Backed up VMs in this run: {}'.format(
+    print('Backed up VMs in this run: {0}'.format(
         backed_up_this_run))
-    print('Backed up VMs in total: {}/{}'.format(len(backed_up),
+    print('Backed up VMs in total: {0}/{1}'.format(len(backed_up),
                                                        len(all_vm)))
 
 
