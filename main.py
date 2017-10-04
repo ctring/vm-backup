@@ -32,6 +32,7 @@ FORMATTER = logging.Formatter('%(asctime)s|%(name)s|%(levelname)s| %(message)s')
 LSH.setFormatter(FORMATTER)
 LOGGER.addHandler(LSH)
 
+
 def get_block_devs(vm_name):
     """
     Finds all block disk memory objects for the vm.
@@ -116,7 +117,8 @@ def restore_vm_def(vm_name, backup_dir=BACKUP_DIR):
 
 def safe_exit(vm_name):
     for d in get_block_devs(vm_name):
-        subprocess.Popen(['virsh', 'blockjob', vm_name, d, '--abort'])
+        prc = subprocess.Popen(['virsh', 'blockjob', vm_name, d, '--abort'])
+        prc.communicate()
 
 def copy_block(vm_name, disk_name, backup_dir=BACKUP_DIR):
     """Copies the block device into backup."""
@@ -131,7 +133,8 @@ def copy_block(vm_name, disk_name, backup_dir=BACKUP_DIR):
                                                                    )
                )
     block_copy_cmd = ['virsh', 'blockcopy', vm_name, disk_name, backup_name]
-    subprocess.Popen(block_copy_cmd)
+    prc = subprocess.Popen(block_copy_cmd)
+    prc.communicate()
 
     progress = 0
     progress_cmd = ['virsh', 'blockjob', vm_name, disk_name]
@@ -166,6 +169,7 @@ def rotate_backups(vm_name):
         prev = bkcnt+1
         bk_prev = get_backup_name(vm_name, prev)
         bk = get_backup_name(vm_name, bkcnt)
+        print (bk)
         if os.path.isdir(bk_prev) and os.path.isdir(bk):
             print('Remove old backup {0}'.format(bk_prev))
             cmd = ['mv',
@@ -196,12 +200,14 @@ def rotate_backups(vm_name):
         
         bkcnt -= 1
     backup_dir = get_backup_name(vm_name, 0)
-    subprocess.Popen(['mkdir', '-p', backup_dir])
-    subprocess.Popen(['chown', '-R', 'root:kvm', basepath])
+    prc = subprocess.Popen(['mkdir', '-p', backup_dir])
+    prc.communicate()
+    prc = subprocess.Popen(['chown', '-R', 'root:kvm', basepath])
+    prc.communicate()
     return backup_dir
 
 
-def check_disk_space(vm_name):
+def check_disk_space(vm_name, blocks):
     """Checks to see if the required disk space is free on the destination
     volume"""
     print('Checking required disk space.')
@@ -211,7 +217,7 @@ def check_disk_space(vm_name):
     disk_out, _ = disk_prc.communicate()
     disk_space = int(disk_out.split()[9])
 
-    for d in get_block_devs(vm_name):
+    for d in blocks:
         blk_space_cmd = ['virsh', 'domblkinfo', vm_name, d]
         blk_space_prc = subprocess.Popen(blk_space_cmd, stdout=subprocess.PIPE)
         blk_space_out, _ = blk_space_prc.communicate()
@@ -249,14 +255,17 @@ def check_disk_space(vm_name):
 
 def backup_vm(vm_name):
     """Runs backup process for a specified vm."""
-    subprocess.Popen(['mkdir', '-p', BACKUP_DIR])
-    subprocess.Popen(['mkdir', '-p', os.path.join(BACKUP_DIR, vm_name)])
-    subprocess.Popen(['chown', '-R', 'root:kvm', BACKUP_DIR])
+    prc = subprocess.Popen(['mkdir', '-p', BACKUP_DIR])
+    prc.communicate()
+    prc = subprocess.Popen(['mkdir', '-p', os.path.join(BACKUP_DIR, vm_name)])
+    prc.communicate()
+    prc = subprocess.Popen(['chown', '-R', 'root:kvm', BACKUP_DIR])
+    prc.communicate()
 
     # Starting Backup
     print('Backup of {0} started'.format(vm_name))
     blocks = get_block_devs(vm_name)
-    result = check_disk_space(vm_name)
+    result = check_disk_space(vm_name, blocks)
     if result:
         exit(1)
     
@@ -275,7 +284,10 @@ def backup_vm(vm_name):
 
 def do_backup(vm_name):
     """Runs backup code from ported script (original: https://goo.gl/SVCiq9)"""
-    backup_vm(vm_name)
+    # backup_vm(vm_name)
+
+    prc = subprocess.Popen(['./kvm-backup.sh', vm_name])
+    prc.communicate()
 
 def parse_list(vm_list):
     """Uses the format specification at https://goo.gl/p8F6Jv to get

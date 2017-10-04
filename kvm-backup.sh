@@ -15,7 +15,7 @@
 ####################################################
 
 # Default base backup path -- this directory will be created if it does not already exist
-BKPATH="/media/andrew/RazerWin/local_vmbackup"
+BKPATH="/backup"
 
 # String to match in list of VM block devices
 VMDATAMATCH="qcow2"
@@ -167,7 +167,7 @@ function copyBlock() {
   local DISKNAME=$2
   local BAKNAME="$BKPATH/$VMNAME-$DISKNAME-backup.qcow2"
   logLine "Copying disk $DISKNAME for vm $VMNAME into file $BAKNAME..."
-  virsh blockcopy $VMNAME $DISKNAME $BAKNAME 2> /dev/null
+  virsh blockcopy $VMNAME $DISKNAME $BAKNAME #2> /dev/null
   if [ $? -gt 0 ]; then
     safeExit $VMNAME "Problem starting blockcopy"
   fi
